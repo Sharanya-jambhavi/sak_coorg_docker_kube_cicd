@@ -10,73 +10,51 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: spring-app
-  namespace: springapp-ns
+  name: springapp
+  namespace: sak-shetty
   labels:
-    app: spring-app
+    app: springapp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: spring-app
+      app: springapp
   template:
     metadata:
       labels:
-        app: spring-app
+        app: springapp
     spec:
-      initContainers:
-        - name: wait-for-mysql
-          image: busybox:1.36
-          command: ['sh', '-c', 'until nc -z mysql-db 3306; do echo "Waiting for MySQL..."; sleep 5; done; echo "MySQL is up!"']
       containers:
-        - name: spring-app
+        - name: springapp
           image: sakit333/webapp_dev:latest
-          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://mysql-db:3306/myapplication?createDatabaseIfNotExist=true"
+              value: jdbc:mysql://mysql:3306/springdb
             - name: SPRING_DATASOURCE_USERNAME
-              value: "root"
+              value: root
             - name: SPRING_DATASOURCE_PASSWORD
-              value: "1234"
-            - name: SERVER_PORT
-              value: "8088"
-          ports:
-            - containerPort: 8088
-          readinessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8088
-            initialDelaySeconds: 20
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8088
-            initialDelaySeconds: 40
-            periodSeconds: 20
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "250m"
-            limits:
-              memory: "700Mi"
-              cpu: "500m"
-
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox
+          command: ['sh', '-c', 'until nc -z mysql 3306; do echo waiting for mysql; sleep 5; done;']
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: spring-app-svc
-  namespace: springapp-ns
-  labels:
-    app: spring-app
+  name: springapp
+  namespace: sak-shetty
 spec:
-  type: LoadBalancer
   selector:
-    app: spring-app
+    app: springapp
   ports:
-    - name: http
-      port: 8088
-      targetPort: 8088
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
       nodePort: 30088
+  type: LoadBalancer
