@@ -130,7 +130,20 @@ pipeline {
                 '''
             }
         }
-
+        stage('DockerHub account logout') {
+            when {
+                allOf {
+                    expression { params.DEPLOY_ENV == 'prod' }
+                    expression { params.ACTION == 'remove' }
+                }
+            }
+            steps {
+                echo "Removing Docker cred..."
+                sh '''
+                    sudo docker logout
+                '''
+            }
+        }
         stage('Cleanup Local Docker Images') {
             when {
                 allOf {
