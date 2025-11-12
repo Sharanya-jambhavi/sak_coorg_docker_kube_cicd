@@ -1,5 +1,4 @@
-# Spring Boot + MySQL Dockerized Application with Jenkins CI/CD Pipeline
-# Spring Boot + MySQL Kubernetes Deployment
+# Spring Boot + MySQL app ready for Docker Compose (dev) or Kubernetes (prod).
 #### Designed and Developed by: sak_shetty
 
 - This project demonstrates deploying a Spring Boot application with a MySQL database on Kubernetes, using Jenkins pipelines for automation. The setup ensures that the application pod starts only after MySQL is healthy, and all resources can be deployed or removed with parameterized pipeline stages.
